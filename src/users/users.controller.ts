@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { lastValueFrom, of } from 'rxjs';
 import { CreateUserProjectDto } from './dto/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserProjectDto } from './dto/update-user-project.dto';
@@ -46,17 +47,33 @@ export class UsersController {
   }
 
   @Get(':userId/projects/listOwnedProjects')
-  listOwnedProjects(@Param('userId') userId: string) {
-    return [userId];
+  listOwnedProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return lastValueFrom(
+      of([
+        { id: '1', name: 'Project 1' },
+        { id: '2', name: 'Project 2' },
+        { id: '3', name: 'Project 3' },
+      ])
+    );
   }
 
   @Get(':userId/projects/listParticipantProjects')
-  listParticipantProjects(@Param('userId') userId: string) {
-    return [userId];
+  listParticipantProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return lastValueFrom(
+      of([
+        { id: '4', name: 'Project 4' },
+        { id: '5', name: 'Project 5' },
+      ])
+    );
   }
 
   @Get(':userId/projects/listClientProjects')
-  listClientProjects(@Param('userId') userId: string) {
-    return [userId];
+  listClientProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return lastValueFrom(
+      of([
+        { id: '6', name: 'Project 6' },
+        { id: '7', name: 'Project 7' },
+      ])
+    );
   }
 }
