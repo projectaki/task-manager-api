@@ -1,9 +1,9 @@
 import { TaskTag } from 'src/core/enums/task-tag.enum';
 
-export class CreateProjectTaskDto {
+export class TaskDto {
   id: string;
   title: string;
-  description: string;
   completed: boolean;
   tag: TaskTag;
+  description?: string;
 }

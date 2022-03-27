@@ -1,8 +1,10 @@
 import { ProjectRole } from 'src/core/enums/project-role.enum';
 
-export class CreateProjectUserDto {
+export class UserDto {
   id: string;
+  name: string;
   email: string;
+  company: string;
   role: ProjectRole;
-  projectId: string;
+  accepted: boolean;
 }

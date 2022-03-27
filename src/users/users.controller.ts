@@ -12,42 +12,45 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
+    const currentUserId = 'random';
     return createUserDto;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get()
+  findOne() {
+    const currentUserId = 'random';
     return {
-      id,
+      id: 'random',
     };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return { ...updateUserDto, id };
+  @Patch()
+  update(@Body() updateUserDto: UpdateUserDto) {
+    const currentUserId = 'random';
+    return { ...updateUserDto };
   }
 
-  @Post(':userId/projects')
+  @Post('projects')
   createProject(@Body() createUserProjectDto: CreateUserProjectDto) {
+    const currentUserId = 'random';
     return createUserProjectDto;
   }
 
-  @Patch(':userId/projects/:projectId')
-  updateProject(
-    @Param('userId') userId: string,
-    @Param('projectId') projectId: string,
-    @Body() updateUserProjectDto: UpdateUserProjectDto
-  ) {
-    return { ...updateUserProjectDto, id: userId };
+  @Patch('projects/:projectId')
+  updateProject(@Param('projectId') projectId: string, @Body() updateUserProjectDto: UpdateUserProjectDto) {
+    const currentUserId = 'random';
+    return { ...updateUserProjectDto };
   }
 
-  @Delete(':userId/projects/:projectId')
-  deleteProject(@Param('userId') userId: string, @Param('projectId') projectId: string) {
-    return { userId, projectId };
+  @Delete('projects/:projectId')
+  deleteProject(@Param('projectId') projectId: string) {
+    const currentUserId = 'random';
+    return { projectId };
   }
 
-  @Get(':userId/projects/listOwnedProjects')
-  listOwnedProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  @Get('projects/listOwnedProjects')
+  listOwnedProjects(): Promise<CreateUserProjectDto[]> {
+    const currentUserId = 'random';
     return lastValueFrom(
       of([
         { id: '1', name: 'Project 1' },
@@ -57,8 +60,9 @@ export class UsersController {
     );
   }
 
-  @Get(':userId/projects/listParticipantProjects')
-  listParticipantProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  @Get('projects/listParticipantProjects')
+  listParticipantProjects(): Promise<CreateUserProjectDto[]> {
+    const currentUserId = 'random';
     return lastValueFrom(
       of([
         { id: '4', name: 'Project 4' },
@@ -67,8 +71,9 @@ export class UsersController {
     );
   }
 
-  @Get(':userId/projects/listClientProjects')
-  listClientProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  @Get('projects/listClientProjects')
+  listClientProjects(): Promise<CreateUserProjectDto[]> {
+    const currentUserId = 'random';
     return lastValueFrom(
       of([
         { id: '6', name: 'Project 6' },
