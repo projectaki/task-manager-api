@@ -4,7 +4,7 @@
 
 # app settings
 .env
-.local.settings.json
+local.settings.json
 
 # Logs
 logs
