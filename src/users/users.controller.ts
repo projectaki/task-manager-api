@@ -48,7 +48,7 @@ export class UsersController {
     return { projectId };
   }
 
-  @Get('projects/listOwnedProjects')
+  @Get('listOwnedProjects')
   listOwnedProjects(): Promise<CreateUserProjectDto[]> {
     const currentUserId = 'random';
     return lastValueFrom(
@@ -60,7 +60,7 @@ export class UsersController {
     );
   }
 
-  @Get('projects/listParticipantProjects')
+  @Get('listParticipantProjects')
   listParticipantProjects(): Promise<CreateUserProjectDto[]> {
     const currentUserId = 'random';
     return lastValueFrom(
@@ -71,7 +71,7 @@ export class UsersController {
     );
   }
 
-  @Get('projects/listClientProjects')
+  @Get('listClientProjects')
   listClientProjects(): Promise<CreateUserProjectDto[]> {
     const currentUserId = 'random';
     return lastValueFrom(

@@ -2,6 +2,10 @@
 /dist
 /node_modules
 
+# app settings
+.env
+.local.settings.json
+
 # Logs
 logs
 *.log
