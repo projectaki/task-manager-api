@@ -1,12 +1,9 @@
 export interface DBConfig {
-  host: string;
-  port: number;
+  uri: string;
 }
 
 export default () => ({
-  port: parseInt(process.env.PORT, 10) || 3000,
   database: {
-    host: process.env.DATABASE_HOST,
-    port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
+    uri: process.env['MONGODB_URI'],
   } as DBConfig,
 });
