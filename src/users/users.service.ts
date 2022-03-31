@@ -4,6 +4,7 @@ import mongoose, { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'src/projects/schemas/project.schema';
 import { CreateUserProjectDto } from './dto/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserProjectDto } from './dto/update-user-project.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 
@@ -15,7 +16,7 @@ export class UsersService {
     @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  create(createUserDto: CreateUserDto): Promise<User> {
     return this.userModel.create(createUserDto);
   }
 
@@ -55,5 +56,57 @@ export class UsersService {
     await session.endSession();
 
     return user;
+  }
+
+  async updateProject(userId: string, projectId: string, updateUserProjectDto: UpdateUserProjectDto): Promise<User> {
+    await this.projectModel.findByIdAndUpdate({ _id: projectId }, updateUserProjectDto).exec();
+
+    return await this.findOne(userId);
+  }
+
+  async deleteProject(userId: string, projectId: string): Promise<User> {
+    let user;
+    const session = await this.connection.startSession();
+    await session.withTransaction(async () => {
+      await this.projectModel.findByIdAndRemove({ _id: projectId }).session(session).exec();
+      user = await this.userModel
+        .findByIdAndUpdate({ _id: userId }, { $pull: { _id: projectId } }, { new: true })
+        .session(session)
+        .exec();
+      return user;
+    });
+    await session.endSession();
+
+    return user;
+  }
+
+  async listOwnedProjects(userId: string): Promise<CreateUserProjectDto[]> {
+    const user = await this.userModel.findById(userId).populate('ownedProjects').exec();
+    const projects: Project[] = user.ownedProjects;
+    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
+      _id: project._id,
+      name: project.title,
+    }));
+    return projectDtos;
+  }
+
+  async listParticipantProjects(userId: string): Promise<CreateUserProjectDto[]> {
+    const user = await this.userModel.findById(userId).populate('participantProjects').exec();
+    const projects: Project[] = user.participantProjects;
+    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
+      _id: project._id,
+      name: project.title,
+    }));
+    return projectDtos;
+  }
+
+  async listClientProjects(userId: string): Promise<CreateUserProjectDto[]> {
+    const user = await this.userModel.findById(userId).populate('clientProjects').exec();
+    const projects: Project[] = user.clientProjects;
+    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
+      _id: project._id,
+      name: project.title,
+    }));
+    return projectDtos;
   }
 }
