@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { lastValueFrom, of } from 'rxjs';
 import { CreateUserProjectDto } from './dto/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserProjectDto } from './dto/update-user-project.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './schemas/user.schema';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -12,73 +12,60 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    const currentUserId = 'random';
-    return createUserDto;
+    return this.usersService.create(createUserDto);
+  }
+
+  @Get(':userId')
+  findOne(@Param('userId') userId: string): Promise<User> {
+    return this.usersService.findOne(userId);
   }
 
   @Get()
-  findOne() {
-    const currentUserId = 'random';
-    return {
-      id: 'random',
-    };
+  findAll(): Promise<User[]> {
+    return this.usersService.findAll();
   }
 
-  @Patch()
-  update(@Body() updateUserDto: UpdateUserDto) {
-    const currentUserId = 'random';
-    return { ...updateUserDto };
+  @Patch(':userId')
+  update(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(userId, updateUserDto);
   }
 
-  @Post('projects')
-  createProject(@Body() createUserProjectDto: CreateUserProjectDto) {
-    const currentUserId = 'random';
-    return createUserProjectDto;
+  @Delete(':userId')
+  delete(@Param('userId') userId: string) {
+    return this.usersService.remove(userId);
   }
 
-  @Patch('projects/:projectId')
-  updateProject(@Param('projectId') projectId: string, @Body() updateUserProjectDto: UpdateUserProjectDto) {
-    const currentUserId = 'random';
-    return { ...updateUserProjectDto };
+  @Post(':userId/projects')
+  createProject(@Param('userId') userId: string, @Body() createUserProjectDto: CreateUserProjectDto) {
+    return this.usersService.createProject(userId, createUserProjectDto);
   }
 
-  @Delete('projects/:projectId')
-  deleteProject(@Param('projectId') projectId: string) {
-    const currentUserId = 'random';
-    return { projectId };
+  @Patch(':userId/projects/:projectId')
+  updateProject(
+    @Param('userId') userId: string,
+    @Param('projectId') projectId: string,
+    @Body() updateUserProjectDto: UpdateUserProjectDto
+  ) {
+    return this.usersService.updateProject(userId, projectId, updateUserProjectDto);
   }
 
-  @Get('listOwnedProjects')
-  listOwnedProjects(): Promise<CreateUserProjectDto[]> {
-    const currentUserId = 'random';
-    return lastValueFrom(
-      of([
-        { id: '1', name: 'Project 1' },
-        { id: '2', name: 'Project 2' },
-        { id: '3', name: 'Project 3' },
-      ])
-    );
+  @Delete(':userId/projects/:projectId')
+  deleteProject(@Param('userId') userId: string, @Param('projectId') projectId: string) {
+    return this.usersService.deleteProject(userId, projectId);
   }
 
-  @Get('listParticipantProjects')
-  listParticipantProjects(): Promise<CreateUserProjectDto[]> {
-    const currentUserId = 'random';
-    return lastValueFrom(
-      of([
-        { id: '4', name: 'Project 4' },
-        { id: '5', name: 'Project 5' },
-      ])
-    );
+  @Get(':userId/listOwnedProjects')
+  listOwnedProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return this.usersService.listOwnedProjects(userId);
   }
 
-  @Get('listClientProjects')
-  listClientProjects(): Promise<CreateUserProjectDto[]> {
-    const currentUserId = 'random';
-    return lastValueFrom(
-      of([
-        { id: '6', name: 'Project 6' },
-        { id: '7', name: 'Project 7' },
-      ])
-    );
+  @Get(':userId/listParticipantProjects')
+  listParticipantProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return this.usersService.listParticipantProjects(userId);
+  }
+
+  @Get(':userId/listClientProjects')
+  listClientProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+    return this.usersService.listClientProjects(userId);
   }
 }
