@@ -4,6 +4,7 @@ import mongoose, { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'src/projects/schemas/project.schema';
 import { CreateUserProjectDto } from './dto/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ProjectListItemDto } from './dto/project-list-item.dto';
 import { UpdateUserProjectDto } from './dto/update-user-project.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
@@ -32,8 +33,9 @@ export class UsersService {
     return this.userModel.findByIdAndUpdate({ _id: id }, updateUserDto, { new: true }).exec();
   }
 
-  remove(id: string): Promise<User> {
-    return this.userModel.findByIdAndRemove({ _id: id }).exec();
+  async remove(id: string): Promise<string> {
+    const deleted = await this.userModel.findByIdAndRemove({ _id: id }).exec();
+    return deleted._id;
   }
 
   /**
@@ -41,7 +43,7 @@ export class UsersService {
    * A two-way reference is necessary here as we want to query projects as subdocuments of users,
    * aswell as query users as subdocuments of projects.
    */
-  async createProject(userId: string, createUserProjectDto: CreateUserProjectDto): Promise<Project> {
+  async createProject(userId: string, createUserProjectDto: CreateUserProjectDto): Promise<ProjectListItemDto> {
     const session = await this.connection.startSession();
     const project = new this.projectModel({ ...createUserProjectDto, owners: [userId] });
 
@@ -60,16 +62,26 @@ export class UsersService {
       });
     await session.endSession();
 
-    return project;
+    return {
+      id: project._id,
+      title: project.title,
+    } as ProjectListItemDto;
   }
 
-  async updateProject(userId: string, projectId: string, updateUserProjectDto: UpdateUserProjectDto): Promise<Project> {
+  async updateProject(
+    userId: string,
+    projectId: string,
+    updateUserProjectDto: UpdateUserProjectDto
+  ): Promise<ProjectListItemDto> {
     const updated = await this.projectModel
       .findByIdAndUpdate({ _id: projectId }, updateUserProjectDto, { new: true })
       .exec();
     if (!updated) throw new NotFoundException('Project not found');
 
-    return updated;
+    return {
+      id: updated._id,
+      title: updated.title,
+    } as ProjectListItemDto;
   }
 
   async deleteProject(userId: string, projectId: string): Promise<string> {
@@ -93,21 +105,39 @@ export class UsersService {
     return projectId;
   }
 
-  async listOwnedProjects(userId: string): Promise<Project[]> {
+  async listOwnedProjects(userId: string): Promise<ProjectListItemDto[]> {
     const user = await this.userModel.findById(userId).populate('ownedProjects').exec();
 
-    return user.ownedProjects;
+    return user.ownedProjects.map(
+      project =>
+        ({
+          id: project._id,
+          title: project.title,
+        } as ProjectListItemDto)
+    );
   }
 
-  async listParticipantProjects(userId: string): Promise<Project[]> {
+  async listParticipantProjects(userId: string): Promise<ProjectListItemDto[]> {
     const user = await this.userModel.findById(userId).populate('participantProjects').exec();
 
-    return user.participantProjects;
+    return user.participantProjects.map(
+      project =>
+        ({
+          id: project._id,
+          title: project.title,
+        } as ProjectListItemDto)
+    );
   }
 
-  async listClientProjects(userId: string): Promise<Project[]> {
+  async listClientProjects(userId: string): Promise<ProjectListItemDto[]> {
     const user = await this.userModel.findById(userId).populate('clientProjects').exec();
 
-    return user.clientProjects;
+    return user.clientProjects.map(
+      project =>
+        ({
+          id: project._id,
+          title: project.title,
+        } as ProjectListItemDto)
+    );
   }
 }

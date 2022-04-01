@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateUserProjectDto } from './dto/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ProjectListItemDto } from './dto/project-list-item.dto';
 import { UpdateUserProjectDto } from './dto/update-user-project.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
@@ -11,7 +12,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 
@@ -26,17 +27,20 @@ export class UsersController {
   }
 
   @Patch(':userId')
-  update(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.usersService.update(userId, updateUserDto);
   }
 
   @Delete(':userId')
-  delete(@Param('userId') userId: string) {
+  delete(@Param('userId') userId: string): Promise<string> {
     return this.usersService.remove(userId);
   }
 
   @Post(':userId/projects')
-  createProject(@Param('userId') userId: string, @Body() createUserProjectDto: CreateUserProjectDto) {
+  createProject(
+    @Param('userId') userId: string,
+    @Body() createUserProjectDto: CreateUserProjectDto
+  ): Promise<ProjectListItemDto> {
     return this.usersService.createProject(userId, createUserProjectDto);
   }
 
@@ -45,27 +49,27 @@ export class UsersController {
     @Param('userId') userId: string,
     @Param('projectId') projectId: string,
     @Body() updateUserProjectDto: UpdateUserProjectDto
-  ) {
+  ): Promise<ProjectListItemDto> {
     return this.usersService.updateProject(userId, projectId, updateUserProjectDto);
   }
 
   @Delete(':userId/projects/:projectId')
-  deleteProject(@Param('userId') userId: string, @Param('projectId') projectId: string) {
+  deleteProject(@Param('userId') userId: string, @Param('projectId') projectId: string): Promise<string> {
     return this.usersService.deleteProject(userId, projectId);
   }
 
   @Get(':userId/listOwnedProjects')
-  listOwnedProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  listOwnedProjects(@Param('userId') userId: string): Promise<ProjectListItemDto[]> {
     return this.usersService.listOwnedProjects(userId);
   }
 
   @Get(':userId/listParticipantProjects')
-  listParticipantProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  listParticipantProjects(@Param('userId') userId: string): Promise<ProjectListItemDto[]> {
     return this.usersService.listParticipantProjects(userId);
   }
 
   @Get(':userId/listClientProjects')
-  listClientProjects(@Param('userId') userId: string): Promise<CreateUserProjectDto[]> {
+  listClientProjects(@Param('userId') userId: string): Promise<ProjectListItemDto[]> {
     return this.usersService.listClientProjects(userId);
   }
 }

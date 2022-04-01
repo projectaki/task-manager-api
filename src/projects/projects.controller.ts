@@ -14,30 +14,18 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Get(':id')
-  findOne(@Param('id') id: string): ProjectDto {
-    return {
-      id,
-      name: 'Project' + id,
-      ownerIds: ['auth0|622e71a6d36bbb0069373531'],
-      clientIds: [],
-      participantIds: [],
-    };
+  findOne(@Param('id') id: string): Promise<ProjectDto> {
+    return this.projectsService.findOne(id);
   }
 
   @Get('/:id/tasks/:taskId')
-  findTask(@Param('id') id: string, @Param('taskId') taskId: string) {
-    return {
-      id: taskId,
-      title: 'Task ' + taskId,
-      completed: false,
-      tag: TaskTag.BUG,
-      description: 'test descripion' + taskId,
-    };
+  findTask(@Param('id') id: string, @Param('taskId') taskId: string): Promise<TaskDto> {
+    return this.projectsService.findTask(id, taskId);
   }
 
   @Post('/:id/tasks')
-  createTask(@Param('id') id: string, @Body() createProjectTaskDto: CreateProjectTaskDto): TaskDto {
-    return { ...createProjectTaskDto };
+  createTask(@Param('id') id: string, @Body() createProjectTaskDto: CreateProjectTaskDto): Promise<TaskDto> {
+    return this.projectsService.createTask(id, createProjectTaskDto);
   }
 
   @Patch('/:id/tasks/:taskId')
@@ -45,39 +33,20 @@ export class ProjectsController {
     @Param('id') id: string,
     @Param('taskId') taskId: string,
     @Body() updateProjectTaskDto: UpdateProjectTaskDto
-  ): UpdateProjectTaskDto {
-    return { ...updateProjectTaskDto, id: taskId };
+  ): Promise<TaskDto> {
+    return this.projectsService.updateTask(id, taskId, updateProjectTaskDto);
   }
 
   @Delete('/:id/tasks/:taskId')
-  deleteTask(@Param('taskId') taskId: string) {
-    return taskId;
+  deleteTask(@Param('id') id: string, @Param('taskId') taskId: string): Promise<string> {
+    return this.projectsService.deleteTask(id, taskId);
   }
 
   @Get(':id/tasks')
-  listTasks(@Param('id') id: string): TaskDto[] {
-    return [
-      {
-        id: '1',
-        title: 'Task 1',
-        completed: false,
-        tag: TaskTag.BUG,
-      },
-      {
-        id: '2',
-        title: 'Task 2',
-        completed: false,
-        tag: TaskTag.FEATURE,
-      },
-      {
-        id: '3',
-        title: 'Task 3',
-        completed: true,
-        tag: TaskTag.BUG,
-      },
-    ];
+  listTasks(@Param('id') id: string): Promise<TaskDto[]> {
+    return this.projectsService.listTasks(id);
   }
-
+  //////////////////////////////////////////////////////////////////////////////
   @Post(':id/users')
   inviteUser(@Param('id') id: string, @Body() createProjectUserDto: CreateProjectUserDto) {
     return {
