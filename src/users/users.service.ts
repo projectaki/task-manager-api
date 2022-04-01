@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'src/projects/schemas/project.schema';
@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   findOne(id: string): Promise<User> {
-    return this.userModel.findOne({ _id: id }).exec();
+    return this.userModel.findOne({ _id: id }).populate('ownedProjects').exec();
   }
 
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -41,72 +41,73 @@ export class UsersService {
    * A two-way reference is necessary here as we want to query projects as subdocuments of users,
    * aswell as query users as subdocuments of projects.
    */
-  async createProject(userId: string, createUserProjectDto: CreateUserProjectDto): Promise<User> {
-    let user;
+  async createProject(userId: string, createUserProjectDto: CreateUserProjectDto): Promise<Project> {
     const session = await this.connection.startSession();
-    await session.withTransaction(async () => {
-      const project = new this.projectModel({ ...createUserProjectDto, owners: [userId] });
-      await project.save({ session });
-      user = await this.userModel
-        .findByIdAndUpdate({ _id: userId }, { $addToSet: { ownedProjects: project } }, { new: true })
-        .session(session)
-        .exec();
-      return user;
-    });
+    const project = new this.projectModel({ ...createUserProjectDto, owners: [userId] });
+
+    await session
+      .withTransaction(async () => {
+        await project.save({ session });
+        const user = await this.userModel
+          .findByIdAndUpdate({ _id: userId }, { $addToSet: { ownedProjects: project } }, { new: true })
+          .session(session)
+          .exec();
+        if (!user) throw new NotFoundException('User not found');
+        return user;
+      })
+      .catch(err => {
+        throw new NotFoundException(err.message);
+      });
     await session.endSession();
 
-    return user;
+    return project;
   }
 
-  async updateProject(userId: string, projectId: string, updateUserProjectDto: UpdateUserProjectDto): Promise<User> {
-    await this.projectModel.findByIdAndUpdate({ _id: projectId }, updateUserProjectDto).exec();
+  async updateProject(userId: string, projectId: string, updateUserProjectDto: UpdateUserProjectDto): Promise<Project> {
+    const updated = await this.projectModel
+      .findByIdAndUpdate({ _id: projectId }, updateUserProjectDto, { new: true })
+      .exec();
+    if (!updated) throw new NotFoundException('Project not found');
 
-    return await this.findOne(userId);
+    return updated;
   }
 
-  async deleteProject(userId: string, projectId: string): Promise<User> {
-    let user;
+  async deleteProject(userId: string, projectId: string): Promise<string> {
     const session = await this.connection.startSession();
-    await session.withTransaction(async () => {
-      await this.projectModel.findByIdAndRemove({ _id: projectId }).session(session).exec();
-      user = await this.userModel
-        .findByIdAndUpdate({ _id: userId }, { $pull: { _id: projectId } }, { new: true })
-        .session(session)
-        .exec();
-      return user;
-    });
+    await session
+      .withTransaction(async () => {
+        const deleted = await this.projectModel.findByIdAndRemove({ _id: projectId }).session(session).exec();
+        if (!deleted) throw new NotFoundException('Project not found');
+        const user = await this.userModel
+          .findByIdAndUpdate({ _id: userId }, { $pull: { ownedProjects: projectId } }, { new: true })
+          .session(session)
+          .exec();
+        if (!user) throw new NotFoundException('User not found');
+        return user;
+      })
+      .catch(err => {
+        throw new NotFoundException(err.message);
+      });
     await session.endSession();
 
-    return user;
+    return projectId;
   }
 
-  async listOwnedProjects(userId: string): Promise<CreateUserProjectDto[]> {
+  async listOwnedProjects(userId: string): Promise<Project[]> {
     const user = await this.userModel.findById(userId).populate('ownedProjects').exec();
-    const projects: Project[] = user.ownedProjects;
-    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
-      _id: project._id,
-      name: project.title,
-    }));
-    return projectDtos;
+
+    return user.ownedProjects;
   }
 
-  async listParticipantProjects(userId: string): Promise<CreateUserProjectDto[]> {
+  async listParticipantProjects(userId: string): Promise<Project[]> {
     const user = await this.userModel.findById(userId).populate('participantProjects').exec();
-    const projects: Project[] = user.participantProjects;
-    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
-      _id: project._id,
-      name: project.title,
-    }));
-    return projectDtos;
+
+    return user.participantProjects;
   }
 
-  async listClientProjects(userId: string): Promise<CreateUserProjectDto[]> {
+  async listClientProjects(userId: string): Promise<Project[]> {
     const user = await this.userModel.findById(userId).populate('clientProjects').exec();
-    const projects: Project[] = user.clientProjects;
-    const projectDtos: CreateUserProjectDto[] = projects.map(project => ({
-      _id: project._id,
-      name: project.title,
-    }));
-    return projectDtos;
+
+    return user.clientProjects;
   }
 }

@@ -20,6 +20,11 @@ export class UsersController {
     return this.usersService.findOne(userId);
   }
 
+  @Get()
+  findAll(): Promise<User[]> {
+    return this.usersService.findAll();
+  }
+
   @Patch(':userId')
   update(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(userId, updateUserDto);
