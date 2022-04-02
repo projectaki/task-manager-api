@@ -65,10 +65,7 @@ export class ProjectsService {
         { _id: id, 'tasks._id': taskId },
         {
           $set: {
-            'tasks.$.title': updateProjectTaskDto.title,
-            'tasks.$.description': updateProjectTaskDto.description,
-            'tasks.$.completed': updateProjectTaskDto.completed,
-            'tasks.$.tag': updateProjectTaskDto.tag,
+            'tasks.$': updateProjectTaskDto,
           },
         },
         { new: true }
@@ -76,7 +73,15 @@ export class ProjectsService {
       .exec();
     if (!updatedProject) throw new NotFoundException('Project not found');
 
-    return null;
+    const task = updatedProject.tasks.find(t => t._id === taskId);
+
+    return {
+      id: task._id,
+      title: task.title,
+      completed: task.completed,
+      tag: task.tag,
+      description: task.description,
+    } as TaskDto;
   }
 
   async deleteTask(id: string, taskId: string): Promise<string> {
