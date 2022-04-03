@@ -10,13 +10,12 @@ import { UpdateProjectTaskDto } from './dto/update-project-task.dto';
 import { CreateProjectUserDto } from './dto/create-project-user.dto';
 import { UserDto } from './dto/user.dto';
 import { ProjectRole } from 'src/core/enums/project-role.enum';
+import mongoose from 'mongoose';
+import { partialUpdate } from 'src/core/mongo-db/helper';
 
 @Injectable()
 export class ProjectsService {
-  constructor(
-    @InjectModel(Project.name) private readonly projectModel: Model<ProjectDocument>,
-    @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>
-  ) {}
+  constructor(@InjectModel(Project.name) private readonly projectModel: Model<ProjectDocument>) {}
 
   findAll() {
     return this.projectModel.find({}).exec();
@@ -24,67 +23,55 @@ export class ProjectsService {
 
   async findOne(id: string): Promise<ProjectDto> {
     const project = await this.projectModel.findById(id).exec();
-    const dto = {
-      id: project._id,
-      name: project.title,
-      ownerIds: project.owners,
-      participantIds: project.participants,
-      clientIds: project.clients,
-    } as ProjectDto;
+
+    const dto = project.toDto();
 
     return dto;
   }
 
   async findTask(id: string, taskId: string): Promise<TaskDto> {
     const project = await this.projectModel.findById(id).exec();
-    const task = project.tasks.find(t => t._id === taskId);
+    const task = project.tasks.find(t => t._id.toString() === taskId);
 
-    return {
-      id: task._id,
-      title: task.title,
-      completed: task.completed,
-      tag: task.tag,
-      description: task.description,
-    } as TaskDto;
+    const dto = task.toDto();
+
+    return dto;
   }
 
   async createTask(id: string, createProjectTaskDto: CreateProjectTaskDto): Promise<TaskDto> {
-    const task = new this.taskModel(createProjectTaskDto);
-    const project = await this.projectModel.findByIdAndUpdate(id, { $addToSet: { tasks: task } }, { new: true }).exec();
+    const objId = new mongoose.Types.ObjectId();
+
+    const filter = { _id: id };
+    const update = { $addToSet: { tasks: { ...createProjectTaskDto, _id: objId } } };
+    const options = { new: true };
+
+    const project = await this.projectModel.findOneAndUpdate(filter, update, options).exec();
+
     if (!project) throw new NotFoundException('Project not found');
 
-    return {
-      id: task._id,
-      title: task.title,
-      completed: task.completed,
-      tag: task.tag,
-      description: task.description,
-    } as TaskDto;
+    const task = project.tasks.find(t => t._id.toString() === objId.toString());
+
+    const dto = task.toDto();
+
+    return dto;
   }
 
   async updateTask(id: string, taskId: string, updateProjectTaskDto: UpdateProjectTaskDto): Promise<TaskDto> {
-    const updatedProject = await this.projectModel
-      .findByIdAndUpdate(
-        { _id: id, 'tasks._id': taskId },
-        {
-          $set: {
-            'tasks.$': updateProjectTaskDto,
-          },
-        },
-        { new: true }
-      )
-      .exec();
+    const partial = partialUpdate('tasks', updateProjectTaskDto);
+
+    const filter = { _id: id, 'tasks._id': taskId };
+    const update = { $set: partial };
+    const options = { new: true };
+
+    const updatedProject = await this.projectModel.findOneAndUpdate(filter, update, options).exec();
+
     if (!updatedProject) throw new NotFoundException('Project not found');
 
-    const task = updatedProject.tasks.find(t => t._id === taskId);
+    const task = updatedProject.tasks.find(t => t._id.toString() === taskId);
 
-    return {
-      id: task._id,
-      title: task.title,
-      completed: task.completed,
-      tag: task.tag,
-      description: task.description,
-    } as TaskDto;
+    const dto = task.toDto();
+
+    return dto;
   }
 
   async deleteTask(id: string, taskId: string): Promise<string> {
@@ -101,7 +88,7 @@ export class ProjectsService {
 
     return tasks.map(t => {
       return {
-        id: t._id,
+        id: t._id.toString(),
         title: t.title,
         completed: t.completed,
         tag: t.tag,

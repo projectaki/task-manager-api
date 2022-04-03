@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User } from 'src/users/schemas/user.schema';
+import { ProjectDto } from '../dto/project.dto';
 import { Task } from './task.schema';
 
 export type ProjectDocument = Project & Document;
@@ -29,6 +30,15 @@ export class Project {
 
   @Prop([Task])
   tasks: Task[];
+
+  toDto = (): ProjectDto =>
+    ({
+      id: this._id,
+      name: this.title,
+      ownerIds: this.owners,
+      participantIds: this.participants,
+      clientIds: this.clients,
+    } as ProjectDto);
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
