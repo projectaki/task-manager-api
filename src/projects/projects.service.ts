@@ -7,6 +7,9 @@ import { TaskDto } from './dto/task.dto';
 import { CreateProjectTaskDto } from './dto/create-project-task.dto';
 import { Task, TaskDocument } from './schemas/task.schema';
 import { UpdateProjectTaskDto } from './dto/update-project-task.dto';
+import { CreateProjectUserDto } from './dto/create-project-user.dto';
+import { UserDto } from './dto/user.dto';
+import { ProjectRole } from 'src/core/enums/project-role.enum';
 
 @Injectable()
 export class ProjectsService {
@@ -105,5 +108,49 @@ export class ProjectsService {
         description: t.description,
       } as TaskDto;
     });
+  }
+
+  async inviteUser(id: string, userId: string, createProjectUserDto: CreateProjectUserDto): Promise<UserDto> {
+    return {
+      id: '1',
+      accepted: false,
+      company: 'Test',
+      email: createProjectUserDto.email,
+      name: createProjectUserDto.email,
+      role: createProjectUserDto.role,
+    };
+  }
+
+  async uninviteUser(id: string, userId: string): Promise<string> {
+    return '1';
+  }
+
+  async listInvitedUsers(id: string): Promise<UserDto[]> {
+    return [
+      {
+        id: 'auth0|622e71a6d36bbb0069373531',
+        name: 'Akos',
+        email: 'a@a.com',
+        company: 'HR',
+        accepted: true,
+        role: ProjectRole.OWNER,
+      },
+      {
+        id: '2a',
+        name: 'Marysia',
+        email: 'a@a.com',
+        company: 'JAPAN',
+        accepted: false,
+        role: ProjectRole.PARTICIPANT,
+      },
+      {
+        id: '3a',
+        name: 'Jeff',
+        email: 'a@a.com',
+        company: 'MY HOSUE',
+        accepted: true,
+        role: ProjectRole.CLIENT,
+      },
+    ];
   }
 }

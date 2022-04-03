@@ -47,50 +47,22 @@ export class ProjectsController {
     return this.projectsService.listTasks(id);
   }
   //////////////////////////////////////////////////////////////////////////////
-  @Post(':id/users')
-  inviteUser(@Param('id') id: string, @Body() createProjectUserDto: CreateProjectUserDto) {
-    return {
-      id: '1',
-      accepted: false,
-      company: 'Test',
-      email: createProjectUserDto.email,
-      name: createProjectUserDto.email,
-      role: createProjectUserDto.role,
-    };
+  @Post(':id/users/:userId')
+  inviteUser(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() createProjectUserDto: CreateProjectUserDto
+  ) {
+    return this.projectsService.inviteUser(id, userId, createProjectUserDto);
   }
 
   @Delete(':id/users/:userId')
   uninviteUser(@Param('id') id: string, @Param('userId') userId: string) {
-    return userId;
+    return this.projectsService.uninviteUser(id, userId);
   }
 
   @Get(':id/users/listInvitedUsers')
-  listInvitedUsers(@Param('id') id: string): UserDto[] {
-    return [
-      {
-        id: 'auth0|622e71a6d36bbb0069373531',
-        name: 'Akos',
-        email: 'a@a.com',
-        company: 'HR',
-        accepted: true,
-        role: ProjectRole.OWNER,
-      },
-      {
-        id: '2a',
-        name: 'Marysia',
-        email: 'a@a.com',
-        company: 'JAPAN',
-        accepted: false,
-        role: ProjectRole.PARTICIPANT,
-      },
-      {
-        id: '3a',
-        name: 'Jeff',
-        email: 'a@a.com',
-        company: 'MY HOSUE',
-        accepted: true,
-        role: ProjectRole.CLIENT,
-      },
-    ];
+  listInvitedUsers(@Param('id') id: string): Promise<UserDto[]> {
+    return this.projectsService.listInvitedUsers(id);
   }
 }
