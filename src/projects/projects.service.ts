@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
 import { Model } from 'mongoose';
@@ -12,10 +18,14 @@ import { UserDto } from './dto/user.dto';
 import { ProjectRole } from 'src/core/enums/project-role.enum';
 import mongoose from 'mongoose';
 import { partialUpdate } from 'src/core/mongo-db/helper';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 
 @Injectable()
 export class ProjectsService {
-  constructor(@InjectModel(Project.name) private readonly projectModel: Model<ProjectDocument>) {}
+  constructor(
+    @InjectModel(Project.name) private readonly projectModel: Model<ProjectDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>
+  ) {}
 
   findAll() {
     return this.projectModel.find({}).exec();
@@ -97,15 +107,33 @@ export class ProjectsService {
     });
   }
 
-  async inviteUser(id: string, userId: string, createProjectUserDto: CreateProjectUserDto): Promise<UserDto> {
-    return {
-      id: '1',
+  async inviteUser(id: string, userEmail: string, createProjectUserDto: CreateProjectUserDto): Promise<UserDto> {
+    const user: User = await this.userModel.findOne({ email: userEmail }).exec();
+
+    if (!user) throw new NotFoundException('User not found');
+    if (!createProjectUserDto.role) throw new BadRequestException('Role cannot be null!');
+
+    const foundUser = await this.projectModel.findOne({ _id: id, 'members.user': user._id }).exec();
+    if (foundUser) throw new ConflictException('User already invited!');
+
+    const filter = { _id: id };
+    const update = { $push: { members: { accepted: false, role: createProjectUserDto.role, user } } };
+    const options = { new: true };
+
+    const project = await this.projectModel.findOneAndUpdate(filter, update, options).exec();
+
+    if (!project) throw new NotFoundException('Project not found');
+
+    const dto = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      company: user.company,
       accepted: false,
-      company: 'Test',
-      email: createProjectUserDto.email,
-      name: createProjectUserDto.email,
       role: createProjectUserDto.role,
-    };
+    } as UserDto;
+
+    return dto;
   }
 
   async uninviteUser(id: string, userId: string): Promise<string> {

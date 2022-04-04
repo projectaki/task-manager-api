@@ -47,21 +47,21 @@ export class ProjectsController {
     return this.projectsService.listTasks(id);
   }
   //////////////////////////////////////////////////////////////////////////////
-  @Post(':id/users/:userId')
+  @Post(':id/members/:userEmail')
   inviteUser(
     @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param('userEmail') userEmail: string,
     @Body() createProjectUserDto: CreateProjectUserDto
   ) {
-    return this.projectsService.inviteUser(id, userId, createProjectUserDto);
+    return this.projectsService.inviteUser(id, userEmail, createProjectUserDto);
   }
 
-  @Delete(':id/users/:userId')
+  @Delete(':id/members/:userId')
   uninviteUser(@Param('id') id: string, @Param('userId') userId: string) {
     return this.projectsService.uninviteUser(id, userId);
   }
 
-  @Get(':id/users/listInvitedUsers')
+  @Get(':id/members/listInvitedUsers')
   listInvitedUsers(@Param('id') id: string): Promise<UserDto[]> {
     return this.projectsService.listInvitedUsers(id);
   }

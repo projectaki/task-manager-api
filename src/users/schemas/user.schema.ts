@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
+import { UserDto } from 'src/projects/dto/user.dto';
 import { Project } from 'src/projects/schemas/project.schema';
 
 export type UserDocument = User & Document;
@@ -14,6 +15,9 @@ export class User {
 
   @Prop()
   email: string;
+
+  @Prop()
+  company: string;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }] })
   ownedProjects: Project[];
