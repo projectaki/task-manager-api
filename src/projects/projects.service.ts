@@ -1,5 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
 import { Model } from 'mongoose';
 import { ProjectDto } from './dto/project.dto';
@@ -17,7 +23,8 @@ import { ProjectRole } from 'src/core/enums/project-role.enum';
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private readonly projectModel: Model<ProjectDocument>,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectConnection() private readonly connection: mongoose.Connection
   ) {}
 
   findAll() {
@@ -54,7 +61,13 @@ export class ProjectsService {
 
     const task = project.tasks.find(t => t._id.toString() === objId.toString());
 
-    const dto = task.toDto();
+    const dto = {
+      id: task._id.toString(),
+      title: task.title,
+      description: task.description,
+      completed: task.completed,
+      tag: task.tag,
+    } as ProjectTaskDto;
 
     return dto;
   }
@@ -105,21 +118,45 @@ export class ProjectsService {
     userEmail: string,
     createProjectUserDto: CreateProjectMemberDto
   ): Promise<ProjectMemberDto> {
-    const user: User = await this.userModel.findOne({ email: userEmail }).exec();
+    let user: User = new User();
+    const session = await this.connection.startSession();
+    await session
+      .withTransaction(async () => {
+        user = await this.userModel
+          .findOneAndUpdate(
+            { email: userEmail, 'projects.project': { $nin: id } },
+            {
+              $push: {
+                projects: {
+                  project: id,
+                  role: createProjectUserDto.role,
+                  accepted: false,
+                },
+              },
+            },
+            { new: true }
+          )
+          .session(session)
+          .exec();
 
-    if (!user) throw new NotFoundException('User not found');
-    if (!createProjectUserDto.role) throw new BadRequestException('Role cannot be null!');
+        if (!user) throw new NotFoundException("User is already invited or doesn't exist!");
 
-    const foundUser = await this.projectModel.findOne({ _id: id, 'members.user': user._id }).exec();
-    if (foundUser) throw new ConflictException('User already invited!');
+        const filter = { _id: id };
+        const update = {
+          $push: { members: { user: user, role: createProjectUserDto.role, accepted: false } },
+        };
+        const options = { new: true };
 
-    const filter = { _id: id };
-    const update = { $push: { members: { accepted: false, role: createProjectUserDto.role, user } } };
-    const options = { new: true };
+        const project = await this.projectModel.findOneAndUpdate(filter, update, options).session(session).exec();
 
-    const project = await this.projectModel.findOneAndUpdate(filter, update, options).exec();
+        if (!project) throw new ConflictException("Project doesn't exist!");
+      })
+      .catch(err => {
+        if (err instanceof NotFoundException) throw new NotFoundException(err.message);
+        throw new InternalServerErrorException(err.message);
+      });
 
-    if (!project) throw new NotFoundException('Project not found');
+    await session.endSession();
 
     const dto = {
       id: user._id,
@@ -134,35 +171,53 @@ export class ProjectsService {
   }
 
   async uninviteUser(id: string, userId: string): Promise<string> {
-    return '1';
+    let user: User = new User();
+    const session = await this.connection.startSession();
+    await session
+      .withTransaction(async () => {
+        user = await this.userModel
+          .findOneAndUpdate(
+            { _id: userId, 'projects.project': { $in: id } },
+            { $pull: { projects: { project: id } } },
+            { new: true }
+          )
+          .session(session)
+          .exec();
+
+        if (!user) throw new NotFoundException("User is not part of the project or user doesn't exist!");
+
+        const filter = { _id: id };
+        const update = { $pull: { members: { user: userId } } };
+        const options = { new: true };
+
+        const project = await this.projectModel.findOneAndUpdate(filter, update, options).session(session).exec();
+
+        if (!project) throw new NotFoundException("Project doesn't exist!");
+      })
+      .catch(err => {
+        if (err instanceof NotFoundException) throw new NotFoundException(err.message);
+        throw new InternalServerErrorException(err.message);
+      });
+
+    return user._id;
   }
 
-  async listInvitedUsers(id: string): Promise<ProjectMemberDto[]> {
-    return [
-      {
-        id: 'auth0|622e71a6d36bbb0069373531',
-        name: 'Akos',
-        email: 'a@a.com',
-        company: 'HR',
-        accepted: true,
-        role: ProjectRole.OWNER,
-      },
-      {
-        id: '2a',
-        name: 'Marysia',
-        email: 'a@a.com',
-        company: 'JAPAN',
-        accepted: false,
-        role: ProjectRole.PARTICIPANT,
-      },
-      {
-        id: '3a',
-        name: 'Jeff',
-        email: 'a@a.com',
-        company: 'MY HOSUE',
-        accepted: true,
-        role: ProjectRole.CLIENT,
-      },
-    ];
+  async listProjectMembers(id: string): Promise<ProjectMemberDto[]> {
+    const project = await this.projectModel.findOne({ _id: id }).populate('members.user').exec();
+    if (!project) throw new NotFoundException("Project doesn't exist!");
+
+    const membersDtos = project.members.map(m => {
+      const member = <User>m.user;
+      return {
+        id: member._id,
+        name: member.name,
+        email: member.email,
+        company: member.company,
+        accepted: m.accepted,
+        role: m.role,
+      } as ProjectMemberDto;
+    });
+
+    return membersDtos;
   }
 }

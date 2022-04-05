@@ -44,7 +44,7 @@ export class ProjectsController {
   listTasks(@Param('id') id: string): Promise<ProjectTaskDto[]> {
     return this.projectsService.listTasks(id);
   }
-  //////////////////////////////////////////////////////////////////////////////
+
   @Post(':id/members/:userEmail')
   inviteUser(
     @Param('id') id: string,
@@ -61,6 +61,6 @@ export class ProjectsController {
 
   @Get(':id/members/listInvitedUsers')
   listInvitedUsers(@Param('id') id: string): Promise<ProjectMemberDto[]> {
-    return this.projectsService.listInvitedUsers(id);
+    return this.projectsService.listProjectMembers(id);
   }
 }

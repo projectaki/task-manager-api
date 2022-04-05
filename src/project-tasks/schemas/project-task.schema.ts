@@ -27,7 +27,7 @@ export class ProjectTask {
   @Prop()
   updatedAt: Date;
 
-  toDto = (): ProjectTaskDto => {
+  toDto(): ProjectTaskDto {
     return {
       id: this._id.toString(),
       title: this.title,
@@ -35,7 +35,7 @@ export class ProjectTask {
       completed: this.completed,
       tag: this.tag,
     } as ProjectTaskDto;
-  };
+  }
 }
 
 export const ProjectTaskSchema = SchemaFactory.createForClass(ProjectTask);
