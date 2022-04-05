@@ -19,7 +19,7 @@ export class ProjectMember {
   @Prop({ enum: ProjectRole })
   role: ProjectRole;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: User | string;
 }
 
