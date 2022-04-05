@@ -1,7 +1,7 @@
-import { ProjectUser } from '../schemas/project-user.schema';
+import { ProjectMember } from '../../project-members/schemas/project-member.schema';
 
 export class ProjectDto {
   id: string;
   name: string;
-  members: ProjectUser[];
+  members: ProjectMember[];
 }

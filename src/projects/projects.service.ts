@@ -1,24 +1,17 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotAcceptableException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
 import { Model } from 'mongoose';
 import { ProjectDto } from './dto/project.dto';
-import { TaskDto } from './dto/task.dto';
-import { CreateProjectTaskDto } from './dto/create-project-task.dto';
-import { Task, TaskDocument } from './schemas/task.schema';
-import { UpdateProjectTaskDto } from './dto/update-project-task.dto';
-import { CreateProjectUserDto } from './dto/create-project-user.dto';
-import { UserDto } from './dto/user.dto';
-import { ProjectRole } from 'src/core/enums/project-role.enum';
 import mongoose from 'mongoose';
 import { partialUpdate } from 'src/core/mongo-db/helper';
 import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { ProjectTaskDto } from 'src/project-tasks/dto/project-task.dto';
+import { CreateProjectTaskDto } from 'src/project-tasks/dto/create-project-task.dto';
+import { UpdateProjectTaskDto } from 'src/project-tasks/dto/update-project-task.dto';
+import { CreateProjectMemberDto } from 'src/project-members/dtos/create-project-member.dto';
+import { ProjectMemberDto } from 'src/project-members/dtos/project-member.dto';
+import { ProjectRole } from 'src/core/enums/project-role.enum';
 
 @Injectable()
 export class ProjectsService {
@@ -39,7 +32,7 @@ export class ProjectsService {
     return dto;
   }
 
-  async findTask(id: string, taskId: string): Promise<TaskDto> {
+  async findTask(id: string, taskId: string): Promise<ProjectTaskDto> {
     const project = await this.projectModel.findById(id).exec();
     const task = project.tasks.find(t => t._id.toString() === taskId);
 
@@ -48,7 +41,7 @@ export class ProjectsService {
     return dto;
   }
 
-  async createTask(id: string, createProjectTaskDto: CreateProjectTaskDto): Promise<TaskDto> {
+  async createTask(id: string, createProjectTaskDto: CreateProjectTaskDto): Promise<ProjectTaskDto> {
     const objId = new mongoose.Types.ObjectId();
 
     const filter = { _id: id };
@@ -66,7 +59,7 @@ export class ProjectsService {
     return dto;
   }
 
-  async updateTask(id: string, taskId: string, updateProjectTaskDto: UpdateProjectTaskDto): Promise<TaskDto> {
+  async updateTask(id: string, taskId: string, updateProjectTaskDto: UpdateProjectTaskDto): Promise<ProjectTaskDto> {
     const partial = partialUpdate('tasks', updateProjectTaskDto);
 
     const filter = { _id: id, 'tasks._id': taskId };
@@ -92,7 +85,7 @@ export class ProjectsService {
     return deleted._id;
   }
 
-  async listTasks(id: string): Promise<TaskDto[]> {
+  async listTasks(id: string): Promise<ProjectTaskDto[]> {
     const project = await this.projectModel.findById(id).exec();
     const tasks = project.tasks;
 
@@ -103,11 +96,15 @@ export class ProjectsService {
         completed: t.completed,
         tag: t.tag,
         description: t.description,
-      } as TaskDto;
+      } as ProjectTaskDto;
     });
   }
 
-  async inviteUser(id: string, userEmail: string, createProjectUserDto: CreateProjectUserDto): Promise<UserDto> {
+  async inviteUser(
+    id: string,
+    userEmail: string,
+    createProjectUserDto: CreateProjectMemberDto
+  ): Promise<ProjectMemberDto> {
     const user: User = await this.userModel.findOne({ email: userEmail }).exec();
 
     if (!user) throw new NotFoundException('User not found');
@@ -131,7 +128,7 @@ export class ProjectsService {
       company: user.company,
       accepted: false,
       role: createProjectUserDto.role,
-    } as UserDto;
+    } as ProjectMemberDto;
 
     return dto;
   }
@@ -140,7 +137,7 @@ export class ProjectsService {
     return '1';
   }
 
-  async listInvitedUsers(id: string): Promise<UserDto[]> {
+  async listInvitedUsers(id: string): Promise<ProjectMemberDto[]> {
     return [
       {
         id: 'auth0|622e71a6d36bbb0069373531',

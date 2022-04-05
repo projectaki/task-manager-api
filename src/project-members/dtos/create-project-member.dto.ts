@@ -1,5 +1,5 @@
 import { ProjectRole } from 'src/core/enums/project-role.enum';
 
-export class CreateProjectUserDto {
+export class CreateProjectMemberDto {
   role: ProjectRole;
 }

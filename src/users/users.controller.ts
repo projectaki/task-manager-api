@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { CreateUserProjectDto } from './dto/create-user-project.dto';
+import { CreateUserProjectDto } from '../user-projects/dtos/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ProjectListItemDto } from './dto/project-list-item.dto';
-import { UpdateUserProjectDto } from './dto/update-user-project.dto';
+import { ProjectListItemDto } from '../projects/dto/project-list-item.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { UsersService } from './users.service';
+import { UpdateUserProjectDto } from 'src/user-projects/dtos/update-user-project.dto';
 
 @Controller('users')
 export class UsersController {

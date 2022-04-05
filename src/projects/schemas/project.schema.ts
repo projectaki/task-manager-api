@@ -1,9 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
-import { User } from 'src/users/schemas/user.schema';
 import { ProjectDto } from '../dto/project.dto';
-import { ProjectUser } from './project-user.schema';
-import { Task } from './task.schema';
+import { ProjectMember } from '../../project-members/schemas/project-member.schema';
+import { ProjectTask } from 'src/project-tasks/schemas/project-task.schema';
 
 export type ProjectDocument = Project & Document;
 
@@ -20,11 +18,11 @@ export class Project {
   @Prop()
   updatedAt: Date;
 
-  @Prop([ProjectUser])
-  members: ProjectUser[];
+  @Prop([ProjectMember])
+  members: ProjectMember[];
 
-  @Prop([Task])
-  tasks: Task[];
+  @Prop([ProjectTask])
+  tasks: ProjectTask[];
 
   toDto = (): ProjectDto =>
     ({

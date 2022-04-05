@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { TaskTag } from 'src/core/enums/task-tag.enum';
-import { TaskDto } from '../dto/task.dto';
+import { ProjectTaskDto } from '../dto/project-task.dto';
 
-export type TaskDocument = Task & Document;
+export type ProjectTaskDocument = ProjectTask & Document;
 
 @Schema({ versionKey: false, timestamps: true })
-export class Task {
+export class ProjectTask {
   _id: mongoose.Types.ObjectId;
 
   @Prop()
@@ -27,15 +27,15 @@ export class Task {
   @Prop()
   updatedAt: Date;
 
-  toDto = (): TaskDto => {
+  toDto = (): ProjectTaskDto => {
     return {
       id: this._id.toString(),
       title: this.title,
       description: this.description,
       completed: this.completed,
       tag: this.tag,
-    } as TaskDto;
+    } as ProjectTaskDto;
   };
 }
 
-export const TaskSchema = SchemaFactory.createForClass(Task);
+export const ProjectTaskSchema = SchemaFactory.createForClass(ProjectTask);

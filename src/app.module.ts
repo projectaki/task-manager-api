@@ -5,6 +5,9 @@ import { AppController } from './app.controller';
 import configuration, { DBConfig } from './config/configuration';
 import { ProjectsModule } from './projects/projects.module';
 import { UsersModule } from './users/users.module';
+import { ProjectMembersModule } from './project-members/project-members.module';
+import { UserProjectsModule } from './user-projects/user-projects.module';
+import { ProjectTasksModule } from './project-tasks/project-tasks.module';
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { UsersModule } from './users/users.module';
       }),
       inject: [ConfigService],
     }),
+    ProjectTasksModule,
+    ProjectMembersModule,
+    UserProjectsModule,
   ],
   controllers: [AppController],
   providers: [],

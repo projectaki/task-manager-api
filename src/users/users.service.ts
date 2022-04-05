@@ -2,12 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'src/projects/schemas/project.schema';
-import { CreateUserProjectDto } from './dto/create-user-project.dto';
+import { CreateUserProjectDto } from '../user-projects/dtos/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ProjectListItemDto } from './dto/project-list-item.dto';
-import { UpdateUserProjectDto } from './dto/update-user-project.dto';
+import { ProjectListItemDto } from '../projects/dto/project-list-item.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
+import { UpdateUserProjectDto } from 'src/user-projects/dtos/update-user-project.dto';
 
 @Injectable()
 export class UsersService {

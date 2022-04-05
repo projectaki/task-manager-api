@@ -3,10 +3,10 @@ import mongoose, { Document } from 'mongoose';
 import { ProjectRole } from 'src/core/enums/project-role.enum';
 import { User } from 'src/users/schemas/user.schema';
 
-export type ProjectUserDocument = ProjectUser & Document;
+export type ProjectMemberDocument = ProjectMember & Document;
 
 @Schema({ versionKey: false, timestamps: true, _id: false })
-export class ProjectUser {
+export class ProjectMember {
   @Prop()
   createdAt: Date;
 
@@ -23,4 +23,4 @@ export class ProjectUser {
   user: User | string;
 }
 
-export const ProjectUserSchema = SchemaFactory.createForClass(ProjectUser);
+export const ProjectMemberSchema = SchemaFactory.createForClass(ProjectMember);
