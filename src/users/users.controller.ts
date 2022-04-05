@@ -72,4 +72,9 @@ export class UsersController {
   listClientProjects(@Param('userId') userId: string): Promise<ProjectListItemDto[]> {
     return this.usersService.listClientProjects(userId);
   }
+
+  @Get(':userId/listPendingProjects')
+  listPendingProjects(@Param('userId') userId: string): Promise<ProjectListItemDto[]> {
+    return this.usersService.listPendingProjects(userId);
+  }
 }

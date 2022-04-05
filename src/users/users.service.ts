@@ -167,4 +167,18 @@ export class UsersService {
         } as ProjectListItemDto;
       });
   }
+
+  async listPendingProjects(userId: string): Promise<ProjectListItemDto[]> {
+    const user = await this.userModel.findById(userId).populate('projects.project').exec();
+
+    return user.projects
+      .filter(x => x.accepted === false)
+      .map(x => {
+        const project: Project = <Project>x.project;
+        return {
+          id: project._id,
+          title: project.title,
+        } as ProjectListItemDto;
+      });
+  }
 }
