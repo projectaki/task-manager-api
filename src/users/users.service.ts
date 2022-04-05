@@ -111,23 +111,24 @@ export class UsersService {
         const deleted = await this.projectModel.findOneAndRemove({ _id: projectId }).session(session).exec();
         if (!deleted) throw new NotFoundException('Project not found');
         const user = await this.userModel
-          .findOneAndUpdate({ _id: userId }, { $pull: { 'projects.project': projectId } }, { new: true })
+          .findOneAndUpdate({ _id: userId }, { $pull: { projects: { project: projectId } } }, { new: true })
           .session(session)
           .exec();
         if (!user) throw new NotFoundException('User not found');
         return user;
       })
       .catch(err => {
-        throw new NotFoundException(err.message);
+        if (err instanceof NotFoundException) throw new NotFoundException(err.message);
+        throw new InternalServerErrorException(err.message);
       });
+
     await session.endSession();
 
     return projectId;
   }
 
   async listOwnedProjects(userId: string): Promise<ProjectListItemDto[]> {
-    const user = await this.userModel.findById(userId).populate('projects').exec();
-
+    const user = await this.userModel.findById(userId).populate('projects.project').exec();
     return user.projects
       .filter(x => x.role === ProjectRole.OWNER)
       .map(x => {
@@ -140,7 +141,7 @@ export class UsersService {
   }
 
   async listParticipantProjects(userId: string): Promise<ProjectListItemDto[]> {
-    const user = await this.userModel.findById(userId).populate('projects').exec();
+    const user = await this.userModel.findById(userId).populate('projects.project').exec();
 
     return user.projects
       .filter(x => x.role === ProjectRole.PARTICIPANT)
@@ -154,7 +155,7 @@ export class UsersService {
   }
 
   async listClientProjects(userId: string): Promise<ProjectListItemDto[]> {
-    const user = await this.userModel.findById(userId).populate('projects').exec();
+    const user = await this.userModel.findById(userId).populate('projects.project').exec();
 
     return user.projects
       .filter(x => x.role === ProjectRole.CLIENT)
