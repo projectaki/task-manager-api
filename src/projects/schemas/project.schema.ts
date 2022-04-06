@@ -2,12 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProjectDto } from '../dto/project.dto';
 import { ProjectMember } from '../../project-members/schemas/project-member.schema';
 import { ProjectTask } from 'src/project-tasks/schemas/project-task.schema';
+import mongoose from 'mongoose';
 
 export type ProjectDocument = Project & Document;
 
 @Schema({ versionKey: false, timestamps: true })
 export class Project {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
 
   @Prop()
   title: string;
@@ -26,7 +27,7 @@ export class Project {
 
   toDto = (): ProjectDto =>
     ({
-      id: this._id,
+      id: this._id.toString(),
       name: this.title,
       members: this.members,
     } as ProjectDto);

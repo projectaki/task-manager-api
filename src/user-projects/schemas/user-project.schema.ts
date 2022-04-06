@@ -20,7 +20,7 @@ export class UserProject {
   role: ProjectRole;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
-  project: Project | string;
+  project: Project | mongoose.Types.ObjectId;
 }
 
 export const UserProjectSchema = SchemaFactory.createForClass(UserProject);

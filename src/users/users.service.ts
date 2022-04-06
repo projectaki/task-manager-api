@@ -83,7 +83,7 @@ export class UsersService {
     await session.endSession();
 
     return {
-      id: project._id,
+      id: project._id.toString(),
       title: project.title,
     } as ProjectListItemDto;
   }
@@ -99,7 +99,7 @@ export class UsersService {
     if (!updated) throw new NotFoundException('Project not found');
 
     return {
-      id: updated._id,
+      id: updated._id.toString(),
       title: updated.title,
     } as ProjectListItemDto;
   }
@@ -134,7 +134,7 @@ export class UsersService {
       .map(x => {
         const project: Project = <Project>x.project;
         return {
-          id: project._id,
+          id: project._id.toString(),
           title: project.title,
         } as ProjectListItemDto;
       });
@@ -148,7 +148,7 @@ export class UsersService {
       .map(x => {
         const project: Project = <Project>x.project;
         return {
-          id: project._id,
+          id: project._id.toString(),
           title: project.title,
         } as ProjectListItemDto;
       });
@@ -162,7 +162,7 @@ export class UsersService {
       .map(x => {
         const project: Project = <Project>x.project;
         return {
-          id: project._id,
+          id: project._id.toString(),
           title: project.title,
         } as ProjectListItemDto;
       });
@@ -176,7 +176,7 @@ export class UsersService {
       .map(x => {
         const project: Project = <Project>x.project;
         return {
-          id: project._id,
+          id: project._id.toString(),
           title: project.title,
         } as ProjectListItemDto;
       });

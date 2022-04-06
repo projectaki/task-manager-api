@@ -95,7 +95,7 @@ export class ProjectsService {
       .findByIdAndUpdate(id, { $pull: { tasks: { _id: taskId } } }, { new: true })
       .exec();
 
-    return deleted._id;
+    return deleted._id.toString();
   }
 
   async listTasks(id: string): Promise<ProjectTaskDto[]> {
