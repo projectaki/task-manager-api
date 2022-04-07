@@ -10,6 +10,8 @@ import { User, UserDocument } from './schemas/user.schema';
 import { UpdateUserProjectDto } from 'src/user-projects/dtos/update-user-project.dto';
 import { ProjectRole } from 'src/core/enums/project-role.enum';
 import { UserProject } from 'src/user-projects/schemas/user-project.schema';
+import { Permission } from 'src/core/enums/permission.enum';
+import { Role } from 'src/core/enums/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +33,10 @@ export class UsersService {
     return this.userModel.findOne({ _id: id }).exec();
   }
 
+  findOneByQuery(query: { email: string }): Promise<User> {
+    return this.userModel.findOne(query).exec();
+  }
+
   update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     return this.userModel.findByIdAndUpdate({ _id: id }, updateUserDto, { new: true }).exec();
   }
@@ -38,6 +44,14 @@ export class UsersService {
   async remove(id: string): Promise<string> {
     const deleted = await this.userModel.findByIdAndRemove({ _id: id }).exec();
     return deleted._id;
+  }
+
+  async getUserRoles(userId: string): Promise<Role[]> {
+    return [];
+  }
+
+  async getUserPermissions(userId: string): Promise<Permission[]> {
+    return [];
   }
 
   /**
