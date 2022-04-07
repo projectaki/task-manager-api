@@ -36,9 +36,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   private async claimsTransform(payload: any) {
     const emailClaim = this.config.get<string>('EMAIL_CLAIM');
+    const email = payload[emailClaim];
 
-    const user = await this.userService.findOneByQuery({ email: payload.email });
-    if (!user) await this.userService.create({ _id: payload.sub, email: payload[emailClaim], name: payload.name });
+    const user = await this.userService.findOneByQuery({ email });
+    if (!user) await this.userService.create({ _id: payload.sub, email, name: payload.name });
 
     const transformedPayload = this.transformUserClaims(payload);
 
