@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { ProjectMembersModule } from './project-members/project-members.module';
 import { UserProjectsModule } from './user-projects/user-projects.module';
 import { ProjectTasksModule } from './project-tasks/project-tasks.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ProjectTasksModule } from './project-tasks/project-tasks.module';
     ProjectTasksModule,
     ProjectMembersModule,
     UserProjectsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [],
