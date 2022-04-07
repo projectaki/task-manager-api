@@ -5,5 +5,6 @@ export const CurrentUser = createParamDecorator((data: string, ctx: ExecutionCon
   const user: any = {};
   user.role = 'admins';
   user.sub = '62423d9da09e7efbf5dd8bf6';
+  user.email = 'a@a.com';
   return user;
 });

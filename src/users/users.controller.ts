@@ -65,7 +65,6 @@ export class UsersController {
     if (userId !== user.sub)
       throw new ForbiddenException("You can't update a project for a user with a different id than your own");
     const resource = await this.usersService.findOne(userId);
-    console.log(resource);
     if (
       !resource.projects.find(
         x => x.project.toString() === projectId && (x.role === ProjectRole.OWNER || x.role === ProjectRole.CLIENT)
