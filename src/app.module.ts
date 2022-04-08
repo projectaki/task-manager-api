@@ -9,6 +9,7 @@ import { ProjectMembersModule } from './project-members/project-members.module';
 import { UserProjectsModule } from './user-projects/user-projects.module';
 import { ProjectTasksModule } from './project-tasks/project-tasks.module';
 import { AuthModule } from './auth/auth.module';
+import { LoggerModule } from './logger/logger.module';
 import { ExceptionsModule } from './exceptions/exceptions.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { ExceptionsModule } from './exceptions/exceptions.module';
     ProjectMembersModule,
     UserProjectsModule,
     AuthModule,
+    LoggerModule,
     ExceptionsModule,
   ],
   controllers: [AppController],
