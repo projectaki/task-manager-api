@@ -1,4 +1,4 @@
-export interface LogMetaData {
+export class LogMetaData {
   reqUrl: string;
   reqMethod: string;
   protocol: string;
@@ -9,4 +9,5 @@ export interface LogMetaData {
   userName?: string;
   userEmail?: string;
   userRole?: string;
+  body?: string;
 }

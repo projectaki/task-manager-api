@@ -12,11 +12,11 @@ export class LogMiddleware implements NestMiddleware {
     const emailClaim = this.config.get<string>('EMAIL_CLAIM');
 
     this.logger.log({
-      message: `[${req.method}] ${decodeURIComponent(req.originalUrl)} ${user?.[emailClaim] || 'anonymous'}`,
+      message: `[${req.method}] ${decodeURIComponent(req.originalUrl)} [${user?.[emailClaim] || 'anonymous'}]`,
       meta: {
         ip: req.ip,
         reqUrl: req.originalUrl,
-        reqMethod: req.method,
+        reqMethod: `[${req.method}]`,
         protocol: req.protocol,
         host: req.hostname,
         userAgent: req.headers['user-agent'],
@@ -24,6 +24,7 @@ export class LogMiddleware implements NestMiddleware {
         userId: decodeURIComponent(user?.sub),
         userName: user?.name,
         userRole: user?.roles ? user.roles[0] : 'anonymous',
+        body: JSON.stringify(req.body),
       },
     });
     next();
