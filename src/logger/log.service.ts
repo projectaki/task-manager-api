@@ -19,6 +19,14 @@ export class LogService {
     } as LogSchema);
   }
 
+  public logMessage(msg: string) {
+    this.logModel.create({
+      level: LogLevel.INFO,
+      message: msg,
+      timestamp: new Date(Date.now()),
+    } as LogSchema);
+  }
+
   public error(log: Log) {
     this.logModel.create({
       level: LogLevel.ERROR,
