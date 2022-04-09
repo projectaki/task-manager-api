@@ -1,17 +1,17 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { Project, ProjectDocument } from 'src/projects/schemas/project.schema';
+import { Project, ProjectDocument } from './../projects/schemas/project.schema';
 import { CreateUserProjectDto } from '../user-projects/dtos/create-user-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ProjectListItemDto } from '../projects/dto/project-list-item.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
-import { UpdateUserProjectDto } from 'src/user-projects/dtos/update-user-project.dto';
-import { ProjectRole } from 'src/core/enums/project-role.enum';
-import { UserProject } from 'src/user-projects/schemas/user-project.schema';
-import { Permission } from 'src/core/enums/permission.enum';
-import { Role } from 'src/core/enums/role.enum';
+import { UpdateUserProjectDto } from './../user-projects/dtos/update-user-project.dto';
+import { ProjectRole } from './../core/enums/project-role.enum';
+import { UserProject } from './../user-projects/schemas/user-project.schema';
+import { Permission } from './../core/enums/permission.enum';
+import { Role } from './../core/enums/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -61,45 +61,50 @@ export class UsersService {
    */
   async createProject(userId: string, createUserProjectDto: CreateUserProjectDto): Promise<ProjectListItemDto> {
     const session = await this.connection.startSession();
-    const project = new this.projectModel({
-      ...createUserProjectDto,
-      members: {
-        user: userId,
-        accepted: true,
-        role: ProjectRole.OWNER,
-      },
-    });
+    session.startTransaction();
 
-    await session
-      .withTransaction(async () => {
-        await project.save({ session });
-        const filter = { _id: userId };
-        const update = {
-          $push: {
-            projects: {
-              project: project._id,
-              role: ProjectRole.OWNER,
+    try {
+      const [project] = await this.projectModel.create(
+        [
+          {
+            ...createUserProjectDto,
+            members: {
+              user: userId,
               accepted: true,
-            } as UserProject,
+              role: ProjectRole.OWNER,
+            },
           },
-        };
-        const options = { new: true, session };
+        ],
+        { session }
+      );
 
-        const user = await this.userModel.findOneAndUpdate(filter, update, options).session(session).exec();
-        if (!user) throw new NotFoundException('User not found');
-        return user;
-      })
-      .catch(err => {
-        if (err instanceof NotFoundException) throw new NotFoundException(err.message);
-        throw new InternalServerErrorException(err.message);
-      });
+      const filter = { _id: userId };
+      const update = {
+        $push: {
+          projects: {
+            project: project._id,
+            role: ProjectRole.OWNER,
+            accepted: true,
+          } as UserProject,
+        },
+      };
+      const options = { new: true, session };
 
-    await session.endSession();
+      const user = await this.userModel.findOneAndUpdate(filter, update, options).session(session).exec();
+      if (!user) throw new NotFoundException('User not found');
+      await session.commitTransaction();
 
-    return {
-      id: project._id.toString(),
-      title: project.title,
-    } as ProjectListItemDto;
+      return {
+        id: project._id.toString(),
+        title: project.title,
+      } as ProjectListItemDto;
+    } catch (err) {
+      await session.abortTransaction();
+      if (err instanceof NotFoundException) throw new NotFoundException(err.message);
+      throw err;
+    } finally {
+      await session.endSession();
+    }
   }
 
   async updateProject(

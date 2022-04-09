@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProjectDto } from '../dto/project.dto';
 import { ProjectMember } from '../../project-members/schemas/project-member.schema';
-import { ProjectTask } from 'src/project-tasks/schemas/project-task.schema';
 import mongoose from 'mongoose';
+import { ProjectTask } from './../../project-tasks/schemas/project-task.schema';
 
 export type ProjectDocument = Project & Document;
 

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { TaskTag } from 'src/core/enums/task-tag.enum';
+import { TaskTag } from './../../core/enums/task-tag.enum';
 import { ProjectTaskDto } from '../dto/project-task.dto';
 
 export type ProjectTaskDocument = ProjectTask & Document;
