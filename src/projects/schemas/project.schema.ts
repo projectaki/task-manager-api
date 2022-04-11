@@ -25,12 +25,9 @@ export class Project {
   @Prop([ProjectTask])
   tasks: ProjectTask[];
 
-  toDto = (): ProjectDto =>
-    ({
-      id: this._id.toString(),
-      name: this.title,
-      members: this.members,
-    } as ProjectDto);
+  static toDto(project: Project): ProjectDto {
+    return { id: project._id.toString(), name: project.title, members: project.members } as ProjectDto;
+  }
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

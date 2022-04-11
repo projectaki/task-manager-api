@@ -34,7 +34,7 @@ export class ProjectsService {
   async findOne(id: string): Promise<ProjectDto> {
     const project = await this.projectModel.findById(id).exec();
 
-    const dto = project.toDto();
+    const dto = Project.toDto(project);
 
     return dto;
   }
