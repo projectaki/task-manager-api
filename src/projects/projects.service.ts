@@ -18,6 +18,7 @@ import { UpdateProjectTaskDto } from 'src/project-tasks/dto/update-project-task.
 import { CreateProjectMemberDto } from 'src/project-members/dtos/create-project-member.dto';
 import { ProjectMemberDto } from 'src/project-members/dtos/project-member.dto';
 import { ProjectRole } from 'src/core/enums/project-role.enum';
+import { ProjectTask } from 'src/project-tasks/schemas/project-task.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -43,7 +44,7 @@ export class ProjectsService {
     const project = await this.projectModel.findById(id).exec();
     const task = project.tasks.find(t => t._id.toString() === taskId);
 
-    const dto = task.toDto();
+    const dto = ProjectTask.toDto(task);
 
     return dto;
   }
@@ -61,13 +62,7 @@ export class ProjectsService {
 
     const task = project.tasks.find(t => t._id.toString() === objId.toString());
 
-    const dto = {
-      id: task._id.toString(),
-      title: task.title,
-      description: task.description,
-      completed: task.completed,
-      tag: task.tag,
-    } as ProjectTaskDto;
+    const dto = ProjectTask.toDto(task);
 
     return dto;
   }
@@ -85,7 +80,7 @@ export class ProjectsService {
 
     const task = updatedProject.tasks.find(t => t._id.toString() === taskId);
 
-    const dto = task.toDto();
+    const dto = ProjectTask.toDto(task);
 
     return dto;
   }
@@ -95,22 +90,15 @@ export class ProjectsService {
       .findByIdAndUpdate(id, { $pull: { tasks: { _id: taskId } } }, { new: true })
       .exec();
 
-    return deleted._id.toString();
+    if (!deleted) throw new NotFoundException('Project not found');
+
+    return taskId;
   }
 
   async listTasks(id: string): Promise<ProjectTaskDto[]> {
     const project = await this.projectModel.findById(id).exec();
     const tasks = project.tasks;
-
-    return tasks.map(t => {
-      return {
-        id: t._id.toString(),
-        title: t.title,
-        completed: t.completed,
-        tag: t.tag,
-        description: t.description,
-      } as ProjectTaskDto;
-    });
+    return tasks.map(t => ProjectTask.toDto(t));
   }
 
   async inviteUser(

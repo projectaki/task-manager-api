@@ -27,13 +27,13 @@ export class ProjectTask {
   @Prop()
   updatedAt: Date;
 
-  toDto(): ProjectTaskDto {
+  static toDto(task: ProjectTask): ProjectTaskDto {
     return {
-      id: this._id.toString(),
-      title: this.title,
-      description: this.description,
-      completed: this.completed,
-      tag: this.tag,
+      id: task._id.toString(),
+      title: task.title,
+      description: task.description,
+      completed: task.completed,
+      tag: task.tag,
     } as ProjectTaskDto;
   }
 }
