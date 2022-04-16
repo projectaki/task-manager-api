@@ -38,8 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const emailClaim = this.config.get<string>('EMAIL_CLAIM');
     const email = payload[emailClaim];
 
-    const user = await this.userService.findOneByQuery({ email });
-    if (!user) await this.userService.create({ _id: payload.sub, email, name: payload.name });
+    await this.userService.findOneByEmailAndUpdate({ email }, { _id: payload.sub, email, name: payload.name });
 
     const transformedPayload = this.transformUserClaims(payload);
 
@@ -49,9 +48,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private async transformUserClaims(payload: any) {
     const roles = await this.userService.getUserRoles(payload.sub);
     const permissions = await this.userService.getUserPermissions(payload.sub);
+    const emailClaim = this.config.get<string>('EMAIL_CLAIM');
+    const email = payload[emailClaim];
 
     payload.roles = roles;
     payload.permissions = permissions;
+    payload.email = email;
 
     return payload;
   }
